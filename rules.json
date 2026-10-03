@@ -1,0 +1,553 @@
+{
+  "version": 1,
+  "severityWeights": {
+    "critical": 45,
+    "high": 25,
+    "medium": 10,
+    "low": 4
+  },
+  "trustedDiscount": {
+    "critical": 1.0,
+    "high": 0.25,
+    "medium": 0.1,
+    "low": 0.1
+  },
+  "trustedRepo": {
+    "minStars": 1000,
+    "minAgeDays": 365
+  },
+  "levels": {
+    "safe": 80,
+    "caution": 45
+  },
+  "meta": {
+    "newRepoDays": 14,
+    "newOwnerDays": 30,
+    "lowStars": 20,
+    "lurePattern": "\\b(cheats?|aimbot|wallhack|triggerbot|spoofer|injector|executor|keygen|cracked|crack|activator|robux|v-?bucks|nitro[\\s_-]?gen(erator)?|free[\\s_-]?(nitro|robux|vbucks|premium)|hwid|unlocker|bypass|hack(s|tool)?|mod[\\s_-]?menu)\\b",
+    "malwarePattern": "\\b(stealer|grabber|token[\\s_-]?(grabber|logger|stealer)|keylogger|ransomware|botnet|rat|infostealer|crypter|fud)\\b",
+    "lureFlags": [
+      "workflow_fake_activity",
+      "random_named_workflow",
+      "readme_download_button",
+      "readme_external_download",
+      "readme_release_archive",
+      "committed_archive",
+      "committed_executable",
+      "release_executable",
+      "release_archive",
+      "html_hidden_payload",
+      "download_only",
+      "readme_archive_password",
+      "readme_disable_av"
+    ],
+    "lureMaxStars": 500
+  },
+  "skipDirs": [
+    "node_modules/",
+    "vendor/",
+    "bower_components/",
+    ".git/",
+    "site-packages/"
+  ],
+  "contentRules": [
+    {
+      "id": "reverse_shell",
+      "severity": "critical",
+      "title": "Reverse shell",
+      "description": "Code that gives a remote attacker a shell on your machine.",
+      "pattern": "bash\\s+-i\\s*>&\\s*/dev/tcp/|/dev/tcp/(?!127\\.|0\\.0\\.0\\.|localhost)\\d{1,3}\\.\\d{1,3}|nc(at)?\\s+(-\\w+\\s+)*-e\\s+/bin/(ba)?sh|mkfifo\\s+/tmp/\\w+;\\s*nc\\b|pty\\.spawn\\(\\s*['\\\"]/bin/(ba)?sh",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "discord_token_stealer",
+      "severity": "critical",
+      "title": "Discord token stealer signature",
+      "description": "Regex or file paths used by Discord token grabbers.",
+      "pattern": "\\[\\\\w-\\]\\{24\\}\\\\\\.\\[\\\\w-\\]\\{6\\}|mfa\\\\\\.\\[\\\\w-\\]\\{84\\}|dQw4w9WgXcQ:|discord(canary|ptb)?[\\\\/]+Local Storage[\\\\/]+leveldb",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "browser_credential_theft",
+      "severity": "critical",
+      "title": "Browser password/cookie theft",
+      "description": "Reads saved browser passwords, cookies or the Chrome master key.",
+      "pattern": "['\\\"]Login Data['\\\"]|CryptUnprotectData|os_crypt['\\\"]?\\]?\\s*\\[?['\\\"]encrypted_key|['\\\"]encrypted_key['\\\"]",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "defender_tamper",
+      "severity": "critical",
+      "title": "Disables antivirus",
+      "description": "Turns off Windows Defender or adds exclusions so malware isn't detected.",
+      "pattern": "Set-MpPreference\\s+[^\\n]{0,300}-Disable(RealtimeMonitoring|IOAVProtection|BehaviorMonitoring|ScriptScanning)|DisableAntiSpyware|sc(\\.exe)?\\s+(stop|delete)\\s+WinDefend",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "defender_exclusion",
+      "severity": "high",
+      "title": "Adds antivirus exclusions",
+      "description": "Adds Windows Defender exclusions so files/processes aren't scanned. Some legit tools do this for speed, but malware does it to hide.",
+      "pattern": "Add-MpPreference\\s+[^\\n]{0,300}-Exclusion(Path|Process|Extension)",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "crypto_wallet_theft",
+      "severity": "high",
+      "title": "Crypto wallet theft",
+      "description": "Targets crypto wallet files or wallet browser extensions.",
+      "pattern": "wallet\\.dat|exodus\\.wallet|Electrum[\\\\/]+wallets|nkbihfbeogaeaoehlefnkodbefgpgknn|Atomic[\\\\/]+Local Storage",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "crypto_miner",
+      "severity": "high",
+      "title": "Crypto miner",
+      "description": "References to cryptocurrency mining software or pools.",
+      "pattern": "\\bxmrig\\b|stratum\\+(tcp|ssl)://|coinhive|cryptonight|minexmr\\.com|nanopool\\.org|supportxmr\\.com|moneroocean",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "powershell_download_exec",
+      "severity": "high",
+      "title": "PowerShell download-and-run",
+      "description": "Downloads code from the internet and executes it immediately.",
+      "pattern": "(IEX|Invoke-Expression)\\s*\\(?\\s*\\(?\\s*(New-Object\\s+(System\\.)?Net\\.WebClient|\\(?\\s*iwr|Invoke-WebRequest|irm\\b|Invoke-RestMethod)|\\.DownloadString\\(|\\b(iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\\b[^\\n|]{0,300}\\|\\s*(iex|Invoke-Expression)",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "powershell_encoded",
+      "severity": "high",
+      "title": "Encoded PowerShell command",
+      "description": "Hidden PowerShell command passed as base64.",
+      "pattern": "powershell(\\.exe)?[^\\n]{0,500}\\s-(e|ec|enc|encodedcommand)\\s+[A-Za-z0-9+/=]{20,}",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "eval_decoded_payload",
+      "severity": "high",
+      "title": "Executes hidden/encoded code",
+      "description": "Decodes an obfuscated blob (base64/hex/zlib/marshal) and executes it.",
+      "pattern": "\\b(eval|exec)\\s*\\(\\s*(compile\\s*\\(\\s*)?(base64\\.b(64|32|85)decode|codecs\\.decode|bytes\\.fromhex|zlib\\.decompress|marshal\\.loads|lzma\\.decompress|__import__\\(\\s*['\\\"](base64|zlib|marshal|codecs)|atob\\s*\\(|Buffer\\.from\\([^)]*['\\\"](base64|hex)['\\\"]|unescape\\s*\\()|\\bnew\\s+Function\\s*\\(\\s*atob\\s*\\(",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "discord_webhook",
+      "severity": "high",
+      "title": "Discord webhook (data exfiltration)",
+      "description": "Hardcoded Discord webhook - a common way stealers send your data to the attacker.",
+      "pattern": "discord(app)?\\.com/api/webhooks/\\d{6,}/[\\w-]{20,}",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "install_hook_download",
+      "severity": "high",
+      "title": "Install script downloads and runs code",
+      "description": "Package install/setup step fetches remote code and pipes it into a shell or interpreter.",
+      "pattern": "(curl|wget|iwr|Invoke-WebRequest)[^\\n]{0,200}\\|\\s*(sudo\\s+)?(ba|z|da)?sh\\b|(curl|wget)[^\\n]{0,200}\\|\\s*(node|python3?|perl|ruby)\\b|node\\s+-e\\s+['\\\"][^\\n]{0,200}(https?\\.get|fetch\\(|child_process)",
+      "appliesTo": [
+        "manifest"
+      ]
+    },
+    {
+      "id": "pipe_to_shell",
+      "severity": "medium",
+      "title": "Downloads and runs remote script",
+      "description": "Pipes a downloaded script straight into a shell (curl | bash).",
+      "pattern": "(curl|wget)[^\\n|]{0,200}\\|\\s*(sudo\\s+)?(ba|z|da)?sh\\b",
+      "appliesTo": [
+        "script",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "telegram_bot_exfil",
+      "severity": "medium",
+      "title": "Hardcoded Telegram bot token",
+      "description": "Telegram bot API with embedded token - used legitimately by bots but also by stealers to exfiltrate data.",
+      "pattern": "api\\.telegram\\.org/bot\\d{6,}:[\\w-]{30,}",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "persistence",
+      "severity": "medium",
+      "title": "Startup persistence",
+      "description": "Makes a program start automatically (Run keys, scheduled tasks, cron, LaunchAgents).",
+      "pattern": "CurrentVersion\\\\{1,2}Run\\b|schtasks(\\.exe)?\\s+/create|\\\\Start Menu\\\\Programs\\\\Startup|Library/LaunchAgents/|\\(crontab\\s+-l[^\\n]{0,300}\\|\\s*crontab\\s+-",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "js_obfuscator",
+      "severity": "medium",
+      "title": "Obfuscated JavaScript",
+      "description": "Heavily obfuscated JS (javascript-obfuscator style _0x identifiers) hides what the code does.",
+      "pattern": "_0x[a-f0-9]{4,6}",
+      "appliesTo": [
+        "code",
+        "script",
+        "manifest"
+      ],
+      "minCount": 40
+    },
+    {
+      "id": "python_obfuscator",
+      "severity": "medium",
+      "title": "Obfuscated Python",
+      "description": "Uses a Python obfuscator/packer often seen in malware.",
+      "pattern": "__pyarmor__|pyarmor_runtime|BlankOBF|Hyperion\\s+obfusc|pyobfuscate|PyObfuscator|_____=\\s*eval",
+      "appliesTo": [
+        "code",
+        "script"
+      ]
+    },
+    {
+      "id": "hex_blob",
+      "severity": "medium",
+      "title": "Large hex-escaped blob",
+      "description": "Long run of \\x escape bytes - typical of embedded shellcode or hidden payloads.",
+      "pattern": "(\\\\x[0-9a-fA-F]{2}){80,}",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "hidden_unicode",
+      "severity": "medium",
+      "title": "Hidden bidirectional Unicode",
+      "description": "Invisible bidi control characters can make code look different from what runs (Trojan Source).",
+      "pattern": "[\u202a-\u202e\u2066-\u2069]",
+      "appliesTo": [
+        "code",
+        "script",
+        "manifest"
+      ]
+    },
+    {
+      "id": "setup_py_side_effects",
+      "severity": "medium",
+      "title": "setup.py runs commands / network",
+      "description": "setup.py executes commands or makes network requests at install time.",
+      "pattern": "\\bos\\.system\\(|subprocess\\.(Popen|call|run|check_output)\\(|urllib\\.request\\.urlopen|requests\\.(get|post)\\(|socket\\.socket\\(",
+      "appliesTo": [
+        "manifest"
+      ],
+      "pathPattern": "(^|/)setup\\.py$"
+    },
+    {
+      "id": "remote_payload_host",
+      "severity": "medium",
+      "title": "Fetches from paste/file-drop site",
+      "description": "Pulls content from pastebins, file-drop or tunnel hosts often used to stage malware.",
+      "pattern": "pastebin\\.com/raw|paste\\.ee/r/|hastebin\\.com/raw|rentry\\.co/[\\w-]+/raw|transfer\\.sh/|anonfiles\\.com|gofile\\.io/d|\\b[\\w-]+\\.ngrok(-free)?\\.(io|app)|cdn\\.discordapp\\.com/attachments/|filebin\\.net",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "exe_download_url",
+      "severity": "medium",
+      "title": "Downloads an executable",
+      "description": "Hardcoded URL to an executable/script file.",
+      "pattern": "https?://[^\\s'\\\"<>]{1,500}\\.(exe|scr|msi|dll|bat|vbs|hta|ps1)(\\?[^\\s'\\\"<>]{0,300})?['\\\"\\s)]",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "npm_install_hook",
+      "severity": "low",
+      "title": "npm install hook",
+      "description": "package.json runs a script automatically when installed. Usually harmless (build steps) but a common malware entry point.",
+      "pattern": "\\\"(preinstall|postinstall|install)\\\"\\s*:\\s*\\\"",
+      "appliesTo": [
+        "manifest"
+      ],
+      "pathPattern": "(^|/)package\\.json$"
+    },
+    {
+      "id": "raw_ip_url",
+      "severity": "low",
+      "title": "URL with raw IP address",
+      "description": "Connects to a hardcoded IP instead of a domain name.",
+      "pattern": "https?://(?!127\\.|0\\.0\\.0\\.|10\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[01])\\.|169\\.254\\.)\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
+      "appliesTo": [
+        "script",
+        "manifest",
+        "code",
+        "workflow"
+      ]
+    },
+    {
+      "id": "base64_blob",
+      "severity": "low",
+      "title": "Large base64 blob",
+      "description": "Very long base64 string embedded in code (can hide payloads; also used for legit assets).",
+      "pattern": "[A-Za-z0-9+/]{1500,}={0,2}",
+      "appliesTo": [
+        "code",
+        "script"
+      ]
+    },
+    {
+      "id": "readme_disable_av",
+      "severity": "high",
+      "title": "README tells you to disable antivirus",
+      "description": "Legit software almost never asks you to turn off your antivirus - a classic malware lure.",
+      "pattern": "(disable|turn\\s+off|deactivate|pause|close)\\s+(your\\s+|the\\s+|windows\\s+)?(anti-?virus|defender|real-?time\\s+protection|av\\b|smartscreen)|(anti-?virus|defender)[^\\n]{0,40}(false\\s+positive|will\\s+(flag|detect|delete))",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_archive_password",
+      "severity": "high",
+      "title": "Password-protected download",
+      "description": "Password-protected archives are used to sneak malware past scanners.",
+      "pattern": "(zip|rar|7z|archive|extract|unzip|download)[^\\n]{0,80}\\bpass(word)?\\s*(is\\s*)?[:=\\-]\\s*\\S+|\\bpass(word)?\\s*[:=]\\s*`?[\\w@!#$.-]{3,}`?[^\\n]{0,40}(zip|rar|7z|archive)",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_run_as_admin",
+      "severity": "low",
+      "title": "README asks to run as administrator",
+      "description": "Asks you to run the program with admin rights.",
+      "pattern": "run\\s+(it\\s+|the\\s+\\w+\\s+)?as\\s+(an\\s+)?admin(istrator)?",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_paste_command",
+      "severity": "high",
+      "title": "README tells you to paste a download-and-run command",
+      "description": "Asks you to paste a PowerShell/mshta command that downloads and executes code from the internet - a very common malware trick (\"ClickFix\").",
+      "pattern": "\\b(irm|iwr|Invoke-RestMethod|Invoke-WebRequest|curl(\\.exe)?)\\b[^\\n|]{0,200}\\|\\s*(iex|Invoke-Expression)\\b|\\b(iex|Invoke-Expression)\\s*\\(\\s*(irm|iwr|New-Object)|mshta(\\.exe)?\\s+[\\\"']?https?://|powershell(\\.exe)?[^\\n]{0,500}\\s-(e|ec|enc|encodedcommand)\\s+[A-Za-z0-9+/=]{20,}",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_pipe_to_shell",
+      "severity": "medium",
+      "title": "README install pipes a download into a shell",
+      "description": "Install instructions use curl/wget | bash. Common for legit tools, but you run whatever the server sends - only do it for projects you trust.",
+      "pattern": "(curl|wget)[^\\n|]{0,200}\\|\\s*(sudo\\s+)?(ba|z|da)?sh\\b",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_external_download",
+      "severity": "medium",
+      "title": "Download hosted outside GitHub",
+      "description": "README sends you to a file-sharing site (MediaFire, MEGA, Google Drive, etc.) instead of GitHub Releases, so the file can't be reviewed.",
+      "pattern": "https?://(www\\.)?(mediafire\\.com/(file|download)|mega\\.nz/(file|folder|#)|drive\\.google\\.com/(file|uc)|dropbox\\.com/(s|scl)/|gofile\\.io/d|pixeldrain\\.com/u|anonfiles\\.com|workupload\\.com|sendspace\\.com/file|transfer\\.sh/|files\\.catbox\\.moe|cdn\\.discordapp\\.com/attachments)",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "html_hidden_payload",
+      "severity": "high",
+      "title": "Hidden encoded payload in web page",
+      "description": "An HTML page hides a large encoded blob in an invisible element - used by fake download pages to deliver malware.",
+      "pattern": "display\\s*:\\s*none[^>]{0,300}>\\s*[A-Za-z0-9+/=]{400,}",
+      "appliesTo": [
+        "code"
+      ],
+      "pathPattern": "\\.html?$"
+    },
+    {
+      "id": "readme_download_button",
+      "severity": "medium",
+      "title": "Download link/button leads off-GitHub",
+      "description": "README has a prominent \"Download\" link or button image that points to an external site instead of GitHub Releases - common in fake-software repos.",
+      "pattern": "\\[!\\[[^\\]]{0,120}\\bdownload\\b[^\\]]{0,120}\\]\\([^)]{0,500}\\)\\]\\(https?://(?!github\\.com/[^)\\s]{0,200}/releases)[^)\\s]{1,500}\\)|(?<!!)\\[(?!!)[^\\w\\[\\]()]{0,12}download\\b[^\\]]{0,60}\\]\\(https?://(?!github\\.com/)[^)\\s]{1,500}\\)",
+      "appliesTo": [
+        "readme"
+      ]
+    },
+    {
+      "id": "readme_release_archive",
+      "severity": "medium",
+      "appliesTo": [
+        "readme"
+      ],
+      "pattern": "https?://github\\.com/[\\w.-]{1,100}/[\\w.-]{1,100}/releases/download/[^)\\s\\\"'<>]{1,300}\\.(rar|zip|7z)\\b",
+      "title": "README pushes a packaged archive download",
+      "description": "Links straight to a .rar/.zip/.7z in Releases. Legit projects do this too, but combined with a lure topic or no source code it is the classic fake-software pattern."
+    },
+    {
+      "id": "workflow_fake_activity",
+      "severity": "medium",
+      "title": "Scheduled workflow that keeps committing",
+      "description": "A workflow runs on a frequent schedule and pushes commits - often used to fake activity so a malicious repo looks maintained and ranks higher in search.",
+      "pattern": "cron:\\s*['\\\"]?(\\*|\\d+|\\*/\\d+)\\s+(\\*|\\*/\\d+)\\s+\\*\\s+\\*\\s+[\\s\\S]{0,4000}(createOrUpdateFileContents|git\\s+push|git\\s+commit)",
+      "appliesTo": [
+        "workflow"
+      ]
+    }
+  ],
+  "pathRules": [
+    {
+      "id": "double_extension",
+      "severity": "critical",
+      "title": "Disguised executable (double extension)",
+      "description": "A file pretending to be a document/image but actually executable.",
+      "pattern": "\\.(pdf|docx?|xlsx?|pptx?|jpe?g|png|gif|txt|mp4|mp3|zip)\\.(exe|scr|bat|cmd|com|pif|vbs|js|lnk|hta|msi)$",
+      "scopes": [
+        "tree",
+        "release"
+      ]
+    },
+    {
+      "id": "windows_shortcut_hta",
+      "severity": "high",
+      "title": "Shortcut / HTA / script-host file",
+      "description": "File types (.lnk, .hta, .vbe, .wsf, .scf, .cpl) rarely used legitimately in source repos.",
+      "pattern": "\\.(lnk|hta|vbe|jse|wsf|wsh|scf|cpl)$",
+      "scopes": [
+        "tree",
+        "release"
+      ]
+    },
+    {
+      "id": "committed_executable",
+      "severity": "high",
+      "title": "Executable committed to repo",
+      "description": "Windows executables/DLLs checked into source code can't be reviewed and may be malware.",
+      "pattern": "\\.(exe|scr|pif|msi|dll|sys)$",
+      "scopes": [
+        "tree"
+      ]
+    },
+    {
+      "id": "committed_archive",
+      "severity": "medium",
+      "title": "Archive committed to repo",
+      "description": "Zip/rar/7z files in the source tree can hide content from review.",
+      "pattern": "\\.(zip|rar|7z|iso|cab)$",
+      "scopes": [
+        "tree"
+      ]
+    },
+    {
+      "id": "release_executable",
+      "severity": "low",
+      "title": "Release ships Windows executables",
+      "description": "Releases contain .exe/.msi/.scr files. Normal for apps - but verify the project is reputable.",
+      "pattern": "\\.(exe|scr|msi|pif)$",
+      "scopes": [
+        "release"
+      ]
+    },
+    {
+      "id": "script_launcher",
+      "severity": "low",
+      "title": "Windows script launcher",
+      "description": ".bat/.cmd/.vbs/.ps1 files (contents are scanned separately).",
+      "pattern": "\\.(bat|cmd|vbs|ps1)$",
+      "scopes": [
+        "tree"
+      ]
+    },
+    {
+      "id": "random_named_workflow",
+      "severity": "high",
+      "title": "Randomly named workflow file",
+      "description": "Workflow file names like 'miipAmXWgVIR.yml' are generated by malware campaigns that mass-produce fake repos.",
+      "pattern": "^\\.github/workflows/[A-Z]*(?:[a-z]+[A-Z]+){3,}[a-z]*\\.ya?ml$",
+      "scopes": [
+        "tree"
+      ],
+      "caseSensitive": true
+    },
+    {
+      "id": "release_archive",
+      "severity": "low",
+      "scopes": [
+        "release"
+      ],
+      "pattern": "\\.(rar|7z)$",
+      "title": "Release ships a .rar/.7z archive",
+      "description": "Password-protected RAR/7z archives are the usual way malware dodges GitHub's scanning."
+    }
+  ]
+}
